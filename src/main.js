@@ -25,9 +25,14 @@ function collectState() {
     const rowsPerPage = parseInt(state.rowsPerPage);    // приведём количество страниц к числу
     const page = parseInt(state.page) || 1;
 
+    const total = [
+        state.totalFrom ? parseFloat(state.totalFrom) : null,
+        state.totalTo ? parseFloat(state.totalTo) : null
+    ];
 
     return {
         ...state,
+        total,
         rowsPerPage,
         page
     };
@@ -72,7 +77,7 @@ document.getElementById('app').appendChild(sampleTable.container);
 
 
 // Модули
-const applySearching = initSearching(sampleTable.search.elements.search);
+const applySearching = initSearching('search');
 
 const { applyFiltering, updateIndexes } = initFiltering(
     sampleTable.filter.elements,
@@ -98,9 +103,15 @@ async function init() {
     const indexes = await api.getIndexes();
 
     updateIndexes(sampleTable.filter.elements, {
-        searchByCustomer: indexes.customers,
         searchBySeller: indexes.sellers
     });
 }
+
+sampleTable.container.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+    }
+});
+
 
 init().then(render);

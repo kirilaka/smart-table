@@ -11,37 +11,38 @@ export function initFiltering(elements) {
     }
 
     const applyFiltering = (query, state, action) => {
-        // код с обработкой очистки поля
-        if (action && action.name === 'clear') {
 
-            const wrapper = action.parentElement;
-            const input = wrapper.querySelector('input, select');
-
-            if (input) {
-                input.value = '';
-                const field = action.dataset.field;
-                state[field] = '';
-            }
-        }
-
-        // @todo: #4.5 — отфильтровать данные, используя компаратор
-        const filter = {};
-        Object.keys(elements).forEach(key => {
-            const el = elements[key];
-
-            if (!el || !['INPUT', 'SELECT'].includes(el.tagName) || !el.value) return;
-
-            if (el.name === 'date') {
-                filter['filter[date_from]'] = `${el.value}-01-01`;
-                filter['filter[date_to]'] = `${el.value}-12-31`;
-                return;
-            }
-
-            filter[`filter[${el.name}]`] = el.value;
-        });
-
-        return Object.keys(filter).length ? Object.assign({}, query, filter) : query; // если в фильтре что-то добавилось, применим к запросу
+    if (action && action.name === 'clear') {
+        const field = action.dataset.field;
+        state[field] = '';
     }
+
+    const filter = {};
+
+    Object.keys(state).forEach((key) => {
+        const value = state[key];
+
+        if (!value) return;
+
+        // исключаем служебные поля + search
+        if ([
+            'page',
+            'rowsPerPage',
+            'total',
+            'totalFrom',
+            'totalTo',
+            'search'      // ← ВОТ ЭТО ВАЖНО
+        ].includes(key)) return;
+
+        filter[`filter[${key}]`] = value;
+    });
+
+    return Object.keys(filter).length
+        ? { ...query, ...filter }
+        : query;
+};
+
+
 
     return {
         updateIndexes,
